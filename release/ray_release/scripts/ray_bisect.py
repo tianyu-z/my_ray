@@ -39,12 +39,14 @@ def _bisect(test: Test, commit_list: List[str], concurrency: int) -> str:
             f"{commit_list[0]} to {commit_list[-1]}"
         )
         idx_to_commit = {}
-        for i in range(1, concurrency+1):
-            idx = i * len(commit_list) // (concurrency+1)
-            idx_to_commit[idx] = commit_list[idx]
-        outcomes = _run_test(test, set(idx_to_commit.values()))
         passing_idx = 0
         failing_idx = len(commit_list) - 1  
+        for i in range(1, concurrency+1):
+            idx = i * len(commit_list) // (concurrency+1)
+            # avoid re-run the passing and failing revisions
+            idx = min(failing_idx-1, max(passing_idx+1, idx))
+            idx_to_commit[idx] = commit_list[idx]
+        outcomes = _run_test(test, set(idx_to_commit.values()))
         for idx, commit in idx_to_commit.items():
             is_passing = outcomes[commit] == 'passed'
             if is_passing and idx > passing_idx:
