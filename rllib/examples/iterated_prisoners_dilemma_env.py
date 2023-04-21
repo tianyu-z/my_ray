@@ -16,13 +16,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--framework",
     choices=["tf", "tf2", "torch"],
-    default="tf",
+    default="torch",
     help="The DL framework specifier.",
 )
 parser.add_argument("--stop-iters", type=int, default=200)
 
 
-def main(debug, stop_iters=200, framework="tf"):
+def main(debug, stop_iters=200, framework="torch"):
     train_n_replicates = 1 if debug else 1
     seeds = list(range(train_n_replicates))
 
@@ -45,7 +45,7 @@ def main(debug, stop_iters=200, framework="tf"):
     ray.shutdown()
 
 
-def get_rllib_config(seeds, debug=False, stop_iters=200, framework="tf"):
+def get_rllib_config(seeds, debug=False, stop_iters=200, framework="torch"):
     stop_config = {
         "training_iteration": 2 if debug else stop_iters,
     }
