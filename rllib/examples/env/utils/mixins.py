@@ -48,48 +48,84 @@ class MessagedTwoPlayersTwoActionsInfoMixin(InfoAccumulationInterface, ABC):
     """
 
     def _init_info(self):
-        self.cc_count = []
-        self.dd_count = []
-        self.cd_count = []
-        self.dc_count = []
-        self.turth_telling_count = []
-        self.promise_breaking_count = []
+        self.counts = {
+            f"{k}_count": []
+            for k in [
+                "cc",
+                "dd",
+                "cd",
+                "dc",
+                "c0",
+                "c1",
+                "d0",
+                "d1",
+                "mc0",
+                "mc1",
+                "md0",
+                "md1",
+                "l0",
+                "l1",
+                "t0",
+                "t1",
+            ]
+        }
 
     def _reset_info(self):
-        self.cc_count.clear()
-        self.dd_count.clear()
-        self.cd_count.clear()
-        self.dc_count.clear()
-        self.turth_telling_count.clear()
-        self.promise_breaking_count.clear()
+        for k in self.counts.keys():
+            self.counts[k].clear()
 
     def _get_episode_info(self):
-        return {
-            "CC": np.mean(self.cc_count).item(),
-            "DD": np.mean(self.dd_count).item(),
-            "CD": np.mean(self.cd_count).item(),
-            "DC": np.mean(self.dc_count).item(),
-            # "Truth": np.mean(self.turth_telling_count).item(),
-            # "PromiseBreak": np.mean(self.promise_breaking_count).item(),
-        }
+        return {k: np.mean(v).item() for k, v in self.counts.items()}
 
     def _accumulate_info(self, ac0, ac1, NUM_ACTIONS=2):
         actual_action_player_0 = ac0 // NUM_ACTIONS
         actual_action_player_1 = ac1 // NUM_ACTIONS
         message_action_player_0 = ac0 % NUM_ACTIONS
         message_action_player_1 = ac1 % NUM_ACTIONS
-        self.cc_count.append(
+        self.counts["cc_count"].append(
             actual_action_player_0 == 0 and actual_action_player_1 == 0
         )
-        self.cd_count.append(
+        self.counts["cd_count"].append(
             actual_action_player_0 == 0 and actual_action_player_1 == 1
         )
-        self.dc_count.append(
+        self.counts["dc_count"].append(
             actual_action_player_0 == 1 and actual_action_player_1 == 0
         )
-        self.dd_count.append(
+        self.counts["dd_count"].append(
             actual_action_player_0 == 1 and actual_action_player_1 == 1
         )
+        self.counts["c0_count"].append(actual_action_player_0 == 0)
+        self.counts["c1_count"].append(actual_action_player_1 == 0)
+        self.counts["d0_count"].append(actual_action_player_0 == 1)
+        self.counts["d1_count"].append(actual_action_player_1 == 1)
+        self.counts["mc0_count"].append(message_action_player_0 == 0)
+        self.counts["mc1_count"].append(message_action_player_1 == 0)
+        self.counts["md0_count"].append(message_action_player_0 == 1)
+        self.counts["md1_count"].append(message_action_player_1 == 1)
+        self.counts["l0_count"].append(
+            actual_action_player_0 == 1 and message_action_player_0 == 0
+        )  # lie from player 0
+        self.counts["l0_count"].append(
+            actual_action_player_0 == 0 and message_action_player_0 == 1
+        )  # lie from player 0
+        self.counts["l1_count"].append(
+            actual_action_player_1 == 1 and message_action_player_1 == 0
+        )  # lie from player 1
+        self.counts["l1_count"].append(
+            actual_action_player_1 == 0 and message_action_player_1 == 1
+        )  # lie from player 1
+        self.counts["t0_count"].append(
+            actual_action_player_0 == 1 and message_action_player_0 == 1
+        )  # truth from player 0
+        self.counts["t0_count"].append(
+            actual_action_player_0 == 0 and message_action_player_0 == 0
+        )  # truth from player 0
+        self.counts["t1_count"].append(
+            actual_action_player_1 == 1 and message_action_player_1 == 1
+        )  # truth from player 1
+        self.counts["t1_count"].append(
+            actual_action_player_1 == 0 and message_action_player_1 == 0
+        )  # truth from player 1
 
 
 class NPlayersNDiscreteActionsInfoMixin(InfoAccumulationInterface, ABC):

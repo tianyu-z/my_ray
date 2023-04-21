@@ -225,3 +225,4 @@ workflow_data/
 /compile_commands.json
 # Directory where clangd puts its indexing work
 /.cache/
+custom_metrics.csv

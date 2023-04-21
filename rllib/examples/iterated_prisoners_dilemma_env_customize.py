@@ -17,7 +17,7 @@ parser.add_argument(
     default="torch",
     help="The DL framework specifier.",
 )
-parser.add_argument("--stop-iters", type=int, default=200)
+parser.add_argument("--stop-iters", type=int, default=10)
 parser.add_argument("--algo", type=str, default="PPO", help="PG or PPO")
 parser.add_argument("--ismessaged", type=int, default=1, help="0 or 1")
 
@@ -27,25 +27,28 @@ import csv
 
 
 class CustomLoggingCallback(DefaultCallbacks):
+    def __init__(self):
+        super().__init__()
+        self.episode_number = 0
+
     def on_episode_end(self, worker, base_env, policies, episode, **kwargs):
         env = base_env.get_sub_environments()[0]
         info = env._get_episode_info()
-
+        self.episode_number += 1
         for k, v in info.items():
             episode.custom_metrics[k] = v
         # Save custom metrics to a CSV file
         episode_id = episode.episode_id
-        episode_step = episode.length
         custom_metrics = episode.custom_metrics
 
         with open("custom_metrics.csv", mode="a") as csv_file:
-            fieldnames = ["episode_id", "episode_step"] + list(custom_metrics.keys())
+            fieldnames = ["episode_number", "episode_id"] + list(custom_metrics.keys())
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
             if csv_file.tell() == 0:
                 writer.writeheader()
 
-            row = {"episode_id": episode_id, "episode_step": episode_step}
+            row = {"episode_number": self.episode_number, "episode_id": episode_id}
             row.update(custom_metrics)
             writer.writerow(row)
 
@@ -99,6 +102,7 @@ def get_rllib_config(seeds, debug=False, args=None):
 
     rllib_config = {
         "env": IPD,
+        "seed": 42,
         "env_config": env_config,
         "multiagent": {
             "policies": {
